@@ -20,6 +20,7 @@
         "stephenjude/filament-debugger": "^5.1"
     },
     "require-dev": {
+        "andreapollastri/checkpoint": "*",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^2.4",
         "laravel/pail": "^1.2.5",

@@ -1,4 +1,5 @@
 *.log
+*.pem
 .DS_Store
 .env
 .env.backup
@@ -19,6 +20,7 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/logs
 /storage/pail
 /vendor
 _ide_helper.php

@@ -26,13 +26,15 @@ class PurgeExtractedDocuments extends Command
         $purged = 0;
 
         ExtractionJob::query()
-            ->whereIn('status', [JobStatus::Completed, JobStatus::Failed])
+            ->whereIn('status', [JobStatus::Completed->value, JobStatus::Failed->value])
             ->whereNotNull('storage_path')
             ->where('completed_at', '<', $cutoff)
             ->chunkById(100, function ($jobs) use (&$purged) {
                 foreach ($jobs as $job) {
-                    if ($job->storage_path && Storage::disk('local')->exists($job->storage_path)) {
-                        Storage::disk('local')->delete($job->storage_path);
+                    $disk = config('document-extractor.storage.disk', 'local');
+
+                    if ($job->storage_path && Storage::disk($disk)->exists($job->storage_path)) {
+                        Storage::disk($disk)->delete($job->storage_path);
                     }
 
                     $job->events()->create([

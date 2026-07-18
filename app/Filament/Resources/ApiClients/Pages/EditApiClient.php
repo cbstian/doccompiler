@@ -6,13 +6,15 @@ use App\Filament\Resources\ApiClients\ApiClientResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
-use Filament\Notifications\Notification;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Str;
 
 class EditApiClient extends EditRecord
 {
     protected static string $resource = ApiClientResource::class;
+
+    public ?string $plainTextToken = null;
 
     protected function getHeaderActions(): array
     {
@@ -27,29 +29,38 @@ class EditApiClient extends EditRecord
                 ->modalDescription('El token anterior dejará de funcionar inmediatamente. El nuevo token se mostrará una única vez.')
                 ->modalSubmitActionLabel('Sí, regenerar')
                 ->action(function (): void {
-                    $plainToken = Str::random(40);
+                    $this->plainTextToken = Str::random(40);
 
                     $this->getRecord()->update([
-                        'token' => hash('sha256', $plainToken),
+                        'token' => hash('sha256', $this->plainTextToken),
                     ]);
 
-                    Notification::make()
-                        ->title('Token regenerado')
-                        ->body('Copia este token ahora. No se volverá a mostrar.')
-                        ->success()
-                        ->persistent()
-                        ->actions([
-                            Action::make('copyToken')
-                                ->label('Copiar token')
-                                ->icon('heroicon-o-clipboard')
-                                ->extraAttributes([
-                                    'x-data' => '{}',
-                                    'x-on:click' => 'navigator.clipboard.writeText(\''.e($plainToken).'\')',
-                                ]),
-                        ])
-                        ->send();
+                    $this->replaceMountedAction('showRegeneratedToken');
                 }),
             DeleteAction::make(),
         ];
+    }
+
+    public function showRegeneratedTokenAction(): Action
+    {
+        $token = $this->plainTextToken;
+
+        return Action::make('showRegeneratedToken')
+            ->modalHeading('Token regenerado')
+            ->modalDescription('El token anterior ha dejado de funcionar. Copia el nuevo token ahora, no se volverá a mostrar.')
+            ->form([
+                TextInput::make('token_display')
+                    ->label('Nuevo token')
+                    ->default($token)
+                    ->disabled()
+                    ->copyable()
+                    ->extraInputAttributes(['class' => 'font-mono text-sm']),
+            ])
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Cerrar')
+            ->closeModalByClickingAway(false)
+            ->action(function (): void {
+                $this->plainTextToken = null;
+            });
     }
 }

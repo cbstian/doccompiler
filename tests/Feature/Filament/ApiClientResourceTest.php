@@ -37,8 +37,8 @@ it('creates an api client with auto-generated uuid and hashed token', function (
             'rate_limit_per_minute' => 120,
         ])
         ->call('create')
-        ->assertNotified()
-        ->assertHasNoFormErrors();
+        ->assertHasNoFormErrors()
+        ->assertRedirect();
 
     $client = ApiClient::query()->where('name', 'cliente-test')->firstOrFail();
 
@@ -100,7 +100,7 @@ it('regenerates the token via header action', function () {
 
     livewire(EditApiClient::class, ['record' => $client->id])
         ->callAction('regenerateToken')
-        ->assertNotified();
+        ->assertActionMounted('showRegeneratedToken');
 
     $client->refresh();
 

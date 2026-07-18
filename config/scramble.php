@@ -2,7 +2,6 @@
 
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy;
-use Dedoc\Scramble\Support\Generator\SecurityScheme;
 
 return [
     /*
@@ -175,7 +174,6 @@ return [
         MiddlewareAuthSecurityStrategy::class,
         [
             'middleware' => ['auth.apiclient'],
-            'scheme' => SecurityScheme::http('bearer'),
         ],
     ],
 ];

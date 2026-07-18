@@ -1,22 +1,11 @@
 <?php
 
-use App\HealthChecks\ExtractionBinariesCheck;
-use Spatie\Health\Checks\Checks\DatabaseCheck;
-use Spatie\Health\Checks\Checks\QueueCheck;
-use Spatie\Health\Checks\Checks\RedisCheck;
 use Spatie\Health\Models\HealthCheckResultHistoryItem;
 use Spatie\Health\Notifications\CheckFailedNotification;
 use Spatie\Health\Notifications\Notifiable;
 use Spatie\Health\ResultStores\EloquentHealthResultStore;
 
 return [
-    'checks' => [
-        DatabaseCheck::new(),
-        RedisCheck::new(),
-        QueueCheck::new()->onQueue('documents'),
-        ExtractionBinariesCheck::new(),
-    ],
-
     /*
      * A result store is responsible for saving the results of the checks. The
      * `EloquentHealthResultStore` will save results in the database. You

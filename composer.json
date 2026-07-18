@@ -13,6 +13,7 @@
         "laravel/horizon": "^5.47",
         "laravel/pulse": "^1.7",
         "laravel/tinker": "^3.0",
+        "predis/predis": "^3.5",
         "resend/resend-php": "^1.5",
         "shuvroroy/filament-spatie-laravel-health": "^3.3",
         "spatie/laravel-health": "^1.40",

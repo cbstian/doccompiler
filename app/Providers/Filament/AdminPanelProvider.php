@@ -18,6 +18,8 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use ShuvroRoy\FilamentSpatieLaravelHealth\FilamentSpatieLaravelHealthPlugin;
+use Stephenjude\FilamentDebugger\DebuggerPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -40,6 +42,16 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+            ])
+            ->plugins([
+                FilamentSpatieLaravelHealthPlugin::make()
+                    ->authorize(fn (): bool => request()->user()?->hasRole('admin') === true)
+                    ->navigationGroup('Observabilidad'),
+                DebuggerPlugin::make()
+                    ->navigationGroup(condition: true, label: 'Observabilidad')
+                    ->horizonNavigation(condition: fn (): bool => request()->user()?->can('viewHorizon') === true)
+                    ->pulseNavigation(condition: fn (): bool => request()->user()?->can('viewPulse') === true)
+                    ->telescopeNavigation(condition: false),
             ])
             ->middleware([
                 EncryptCookies::class,

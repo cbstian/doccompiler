@@ -7,12 +7,13 @@ use App\Models\ApiClient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use function Pest\Laravel\actingAs;
 use function Pest\Livewire\livewire;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->actingAs(User::factory()->create());
+    actingAs(User::factory()->admin()->create());
 });
 
 it('renders the list page', function () {

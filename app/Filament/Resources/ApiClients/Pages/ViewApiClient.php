@@ -21,7 +21,7 @@ class ViewApiClient extends ViewRecord
 
     public function showTokenAction(): Action
     {
-        $token = session()->get('api_client_plain_token');
+        $token = session()->get($this->getTokenSessionKey());
 
         return Action::make('showToken')
             ->modalHeading('Token de acceso generado')
@@ -38,7 +38,12 @@ class ViewApiClient extends ViewRecord
             ->modalCancelActionLabel('Cerrar')
             ->closeModalByClickingAway(false)
             ->action(function (): void {
-                session()->forget('api_client_plain_token');
+                session()->forget($this->getTokenSessionKey());
             });
+    }
+
+    protected function getTokenSessionKey(): string
+    {
+        return 'api_client_plain_token.'.$this->getRecord()->getKey();
     }
 }

@@ -48,6 +48,12 @@ it('creates an api client with auto-generated uuid and hashed token', function (
         ->and($client->token)->toMatch('/^[a-f0-9]{64}$/')
         ->and($client->is_active)->toBeTrue()
         ->and($client->rate_limit_per_minute)->toBe(120);
+
+    $plainTextToken = session()->get('api_client_plain_token.'.$client->id);
+
+    expect($plainTextToken)->toBeString()
+        ->and($plainTextToken)->toHaveLength(40)
+        ->and(hash('sha256', $plainTextToken))->toBe($client->token);
 });
 
 it('validates required fields on create', function () {

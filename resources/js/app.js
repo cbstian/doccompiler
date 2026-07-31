@@ -26,6 +26,8 @@
     }
 
     /* ---------------- copy to clipboard ---------------- */
+    const copyLabels = window.__docLabels || { copied: 'Copied', fallback: 'Select & copy' };
+
     document.querySelectorAll('.copy-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             const targetId = btn.getAttribute('data-copy-target');
@@ -35,10 +37,10 @@
             try {
                 await navigator.clipboard.writeText(target.textContent.trim());
                 const original = btn.textContent;
-                btn.textContent = 'Copied';
+                btn.textContent = copyLabels.copied;
                 setTimeout(() => { btn.textContent = original; }, 1600);
             } catch (err) {
-                btn.textContent = 'Select & copy';
+                btn.textContent = copyLabels.fallback;
             }
         });
     });

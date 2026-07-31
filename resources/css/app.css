@@ -151,6 +151,36 @@ a {
     background: var(--bg-raised);
 }
 
+/* ---- language switcher ---- */
+.lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-left: 4px;
+    font-family: var(--mono);
+    font-size: 12px;
+}
+
+.lang-switcher a {
+    color: var(--ink-dim);
+    padding: 3px 6px;
+    border-radius: 4px;
+    transition: color .2s var(--ease), background .2s var(--ease);
+}
+
+.lang-switcher a:hover {
+    color: var(--ink);
+}
+
+.lang-switcher a.is-active {
+    color: var(--accent);
+}
+
+.lang-sep {
+    color: var(--rule);
+    user-select: none;
+}
+
 /* ---------------- reveal-on-scroll ---------------- */
 [data-reveal] {
     opacity: 0;

@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ config('app.name', 'DocCompiler') }} — Compile any document into clean, LLM-ready text</title>
+<title>DocCompiler — Compile any document into clean, LLM-ready text</title>
 <meta name="description" content="DocCompiler is a self-hosted, open source REST API that converts PDFs, Word, Excel, CSV, Markdown and text files into normalized, token-efficient text for AI pipelines.">
-
-@fonts
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -239,5 +240,6 @@ docker compose up -d</pre>
   </div>
 </footer>
 
+<script src="script.js"></script>
 </body>
 </html>

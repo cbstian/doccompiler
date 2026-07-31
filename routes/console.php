@@ -9,3 +9,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('documents:purge')->daily();
+
+Schedule::command('health:queue-check-heartbeat')->everyMinute();
+Schedule::command('health:schedule-check-heartbeat')->everyMinute();

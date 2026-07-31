@@ -31,8 +31,16 @@ class AppServiceProvider extends ServiceProvider
         Health::checks([
             DatabaseCheck::new(),
             RedisCheck::new(),
-            QueueCheck::new()->onQueue('documents'),
-            ExtractionBinariesCheck::new(),
+            QueueCheck::new()
+                ->onQueue(config('document-extractor.queue.queue', 'documents'))
+                ->failWhenHealthJobTakesLongerThanMinutes(10),
+            ...collect(config('document-extractor.binaries', []))
+                ->keys()
+                ->map(fn (string $binaryName) => ExtractionBinariesCheck::new()
+                    ->name("extraction-binary-{$binaryName}")
+                    ->label("Extraction Binary: {$binaryName}")
+                    ->binary($binaryName))
+                ->all(),
         ]);
 
         Gate::define('viewPulse', fn ($user = null): bool => $user?->hasRole('admin') === true);

@@ -1,9 +1,18 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "procodigo/doccompiler",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Self-hosted document extraction API for LLM pipelines (Laravel + Filament + Horizon).",
+    "keywords": [
+        "doccompiler",
+        "document-extraction",
+        "pdf",
+        "markdown",
+        "laravel",
+        "llm",
+        "ocr",
+        "self-hosted"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
@@ -97,5 +106,17 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "homepage": "https://doccompiler.procodigo.cl",
+    "support": {
+        "issues": "https://github.com/procodigo/doccompiler/issues",
+        "source": "https://github.com/procodigo/doccompiler"
+    },
+    "authors": [
+        {
+            "name": "Sebastián Aguilera Vallejos",
+            "email": "sebastian.aguilera.v@gmail.com",
+            "homepage": "https://www.procodigo.cl"
+        }
+    ]
 }

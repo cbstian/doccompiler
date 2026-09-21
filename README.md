@@ -1,58 +1,113 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# DocCompiler
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST self-hosted para convertir documentos en texto limpio listo para pipelines de IA.
 
-## About Laravel
+- **Repositorio canónico (futuro):** https://github.com/procodigo/doccompiler  
+- **Sitio / docs (futuro):** https://doccompiler.procodigo.cl  
+- **Licencia:** MIT  
+- **Estado:** Phase 1 — usable para TXT, MD y PDF nativo; **no** es “production ready” para todos los formatos anunciados en el diseño.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Qué es
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+DocCompiler es una aplicación Laravel (Filament + Horizon + Pulse) pensada como servicio M2M: subes un archivo, recibes un job asíncrono y luego el texto extraído. Autenticación por token de cliente API (no Sanctum de usuarios finales).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Madurez (sé honesto)
 
-## Learning Laravel
+| Formato | Estado Phase 1 |
+|---------|----------------|
+| `.txt` | ✅ Implementado |
+| `.md` | ✅ Implementado (normalización ligera) |
+| `.pdf` | ✅ Texto nativo vía `pdftotext` (poppler). **Sin OCR** aún |
+| `.docx` / `.doc` | ❌ Aceptados por validación MIME, pero el job falla con `UNSUPPORTED_FORMAT` |
+| `.xlsx` / `.xls` / `.csv` | ❌ Igual que arriba |
+| OCR de PDF escaneado | ❌ Pendiente (`tesseract` + `pdftoppm`) |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+La plantilla de marketing y la configuración aceptan más extensiones de las que el pipeline realmente extrae. Eso es intencional: la API y el esquema ya están listos; los drivers se irán completando.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Requisitos
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- PHP 8.3+
+- Composer 2
+- PostgreSQL (recomendado) o MySQL/SQLite
+- Redis (cola Horizon)
+- Binarios para PDF: `poppler-utils` (`pdftotext`, `pdfinfo`; `pdftoppm` reservado para OCR futuro)
 
-## Agentic Development
+Opcional más adelante: `tesseract-ocr`, LibreOffice (`soffice`).
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Quickstart (Docker)
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/procodigo/doccompiler.git
+cd doccompiler
+cp .env.example .env
+docker compose up -d --build
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --force
+docker compose exec app php artisan admin:create-user
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+La app queda en `http://localhost:8080` (o `APP_PORT`). Horizon corre en el servicio `horizon`.
 
-## Contributing
+Documentación detallada: [docs/installation.md](docs/installation.md).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Quickstart (Composer / local)
 
-## Code of Conduct
+```bash
+git clone https://github.com/procodigo/doccompiler.git
+cd doccompiler
+composer install
+cp .env.example .env
+php artisan key:generate
+# configura DB_* y REDIS_* en .env
+php artisan migrate
+php artisan admin:create-user
+# terminal 1
+php artisan serve
+# terminal 2
+php artisan horizon
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+En Ubuntu: `sudo apt-get install -y poppler-utils`. Verifica con `php artisan system:check-binaries`.
 
-## Security Vulnerabilities
+## API (resumen)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Autenticación: `Authorization: Bearer <token>` emitido desde el panel Filament (API Clients).
 
-## License
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `GET` | `/api/health` | Binarios, cola, disco libre |
+| `POST` | `/api/v1/documents` | Sube `document` (multipart) → `202` + `uuid` |
+| `GET` | `/api/v1/documents/{uuid}` | Estado del job |
+| `GET` | `/api/v1/documents/{uuid}/content` | Texto extraído (si `completed`) |
+| `DELETE` | `/api/v1/documents/{uuid}` | Borra job y archivos |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Documentación OpenAPI interactiva vía [Scramble](https://github.com/dedoc/scramble) (ruta típica `/docs/api` según tu despliegue).
+
+Ejemplo:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/documents \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "document=@nota.txt"
+```
+
+## Variables de entorno relevantes
+
+Ver `.env.example`. Destacadas:
+
+- `DOC_EXTRACTOR_MAX_KB`, `DOC_EXTRACTOR_TIMEOUT`
+- `DOC_EXTRACTOR_RETENTION_DAYS`, `DOC_EXTRACTOR_DISK`, `DOC_EXTRACTOR_RESULT_SPILLOVER_BYTES`
+- `DOC_EXTRACTOR_QUEUE_CONNECTION`, `DOC_EXTRACTOR_QUEUE_NAME`
+- `BIN_PDFTOTEXT`, `BIN_PDFINFO`, `BIN_PDFTOPPM`, `BIN_TESSERACT`, `BIN_SOFFICE`
+
+## Seguridad
+
+Reporta vulnerabilidades a **security@procodigo.cl** o vía [GitHub Security Advisories](https://github.com/procodigo/doccompiler/security/advisories) cuando el repo esté en la org. No uses contactos de Laravel upstream.
+
+## Licencia
+
+MIT — ver [LICENSE](LICENSE). Copyright Procodigo / Sebastián Aguilera Vallejos.
+
+## Docs internas
+
+Los archivos `docs/01-*.md`, `docs/02-*.md` y `docs/schema.md` son notas de diseño internas. La guía de usuario es [docs/installation.md](docs/installation.md). Ver [docs/README.md](docs/README.md).

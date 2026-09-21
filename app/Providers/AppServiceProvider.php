@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\HealthChecks\ExtractionBinariesCheck;
+use App\Services\Extractors\ExtractorManager;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -20,7 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ExtractorManager::class, function ($app) {
+            return new ExtractorManager($app);
+        });
     }
 
     /**

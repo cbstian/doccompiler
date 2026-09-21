@@ -1,0 +1,102 @@
+# DocCompiler local demo stack (Phase 1)
+# Supports TXT, MD, and native PDF (pdftotext). DOCX/XLSX/CSV/OCR not yet implemented.
+#
+# Usage:
+#   cp .env.example .env
+#   # set DB_* / REDIS_* as below (compose overrides via environment)
+#   docker compose up -d --build
+#   docker compose exec app php artisan key:generate
+#   docker compose exec app php artisan migrate --force
+#   docker compose exec app php artisan admin:create-user
+
+services:
+  app:
+    build: .
+    ports:
+      - "${APP_PORT:-8080}:8000"
+    environment:
+      APP_NAME: DocCompiler
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:${APP_PORT:-8080}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: doccompiler
+      DB_USERNAME: doccompiler
+      DB_PASSWORD: doccompiler
+      REDIS_CLIENT: predis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+      SESSION_DRIVER: database
+      DOC_EXTRACTOR_QUEUE_CONNECTION: redis
+      DOC_EXTRACTOR_QUEUE_NAME: documents
+      BIN_PDFTOTEXT: /usr/bin/pdftotext
+      BIN_PDFTOPPM: /usr/bin/pdftoppm
+      BIN_PDFINFO: /usr/bin/pdfinfo
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  horizon:
+    build: .
+    environment:
+      APP_NAME: DocCompiler
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: doccompiler
+      DB_USERNAME: doccompiler
+      DB_PASSWORD: doccompiler
+      REDIS_CLIENT: predis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: redis
+      DOC_EXTRACTOR_QUEUE_CONNECTION: redis
+      DOC_EXTRACTOR_QUEUE_NAME: documents
+      BIN_PDFTOTEXT: /usr/bin/pdftotext
+      BIN_PDFTOPPM: /usr/bin/pdftoppm
+      BIN_PDFINFO: /usr/bin/pdfinfo
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - app
+      - redis
+      - postgres
+    command: php artisan horizon
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: doccompiler
+      POSTGRES_USER: doccompiler
+      POSTGRES_PASSWORD: doccompiler
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - doccompiler_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U doccompiler -d doccompiler"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - doccompiler_redis:/data
+
+volumes:
+  doccompiler_pg:
+  doccompiler_redis:
